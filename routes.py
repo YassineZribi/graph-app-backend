@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from models import User, Graph
 from utils import serialize_objectid
+from dijekstra.dijekstra_service import get_shortest_path
 
 auth = Blueprint('auth', __name__)
 
@@ -34,6 +35,20 @@ def login():
 def protected():
     return jsonify({"message": "You have accessed a protected route"}), 200
 
+@auth.route('/profile', methods=['GET'])
+@jwt_required()
+def get_profile():
+    current_user_email = get_jwt_identity()
+
+    user = User.find_by_email(current_user_email)
+    if not user:
+        return jsonify({"message": "User not found"}), 404
+
+    # Convert the _id to a string before returning
+    user['_id'] = serialize_objectid(user['_id'])
+    del user['password']
+    
+    return jsonify(user), 200
 
 graph_bp = Blueprint('graph', __name__)
 
@@ -86,3 +101,25 @@ def delete_graph():
     if success:
         return jsonify({"message": "Graph deleted successfully"}), 200
     return jsonify({"message": "Error deleting graph"}), 500
+
+
+dijekstra_bp = Blueprint('dijekstra', __name__)
+
+# Calculate the dijekstra shortest path of the user's graph
+@dijekstra_bp.route('/dijekstra', methods=['POST'])
+@jwt_required()
+def calculate_dijekstra_shortest_path():
+    current_user_email = get_jwt_identity()
+    data = request.get_json()
+
+    user = User.find_by_email(current_user_email)
+    if not user:
+        return jsonify({"message": "User not found"}), 404
+
+    selected_nodes_and_edges = get_shortest_path(data['graph'], data['startNode'], data['endNode'])
+    # graph = Graph.get_graph(user['_id'])
+    # if graph:
+    #     # Convert ObjectId to string for serialization
+    #     graph['_id'] = serialize_objectid(graph['_id'])
+    #     return jsonify(graph), 200
+    return jsonify(selected_nodes_and_edges), 200

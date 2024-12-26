@@ -1,7 +1,7 @@
 from flask import Flask
 from config import Config
 from models import mongo
-from routes import auth, graph_bp
+from routes import auth, graph_bp, dijekstra_bp
 from flask_jwt_extended import JWTManager
 
 app = Flask(__name__)
@@ -16,6 +16,7 @@ JWTManager(app)
 # Register Blueprints
 app.register_blueprint(auth)
 app.register_blueprint(graph_bp)
+app.register_blueprint(dijekstra_bp)
 
 if __name__ == '__main__':
     app.run(debug=True)
