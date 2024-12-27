@@ -4,9 +4,12 @@ from models import User, Graph
 from utils import serialize_objectid
 from dijekstra.dijekstra_service import get_shortest_path
 
-auth = Blueprint('auth', __name__)
+# Create a parent API Blueprint
+api_bp = Blueprint('api', __name__, url_prefix='/api')
 
-@auth.route('/register', methods=['POST'])
+auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
+
+@auth_bp.route('/register', methods=['POST'])
 def register():
     data = request.get_json()
     if User.find_by_email(data['email']):
@@ -15,7 +18,7 @@ def register():
     User.create_user(data["first_name"], data["last_name"], data['email'], data['password'])
     return jsonify({"message": "User created successfully"}), 201
 
-@auth.route('/login', methods=['POST'])
+@auth_bp.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
     user = User.find_by_email(data['email'])
@@ -30,12 +33,12 @@ def login():
     access_token = create_access_token(identity=user['email'])
     return jsonify({"access_token": access_token, "user": user}), 200
 
-@auth.route('/protected', methods=['GET'])
+@auth_bp.route('/protected', methods=['GET'])
 @jwt_required()
 def protected():
     return jsonify({"message": "You have accessed a protected route"}), 200
 
-@auth.route('/profile', methods=['GET'])
+@auth_bp.route('/profile', methods=['GET'])
 @jwt_required()
 def get_profile():
     current_user_email = get_jwt_identity()
