@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, jsonify
 from config import Config
 from models import mongo
 from routes import api_bp, auth_bp, graph_bp, dijekstra_bp
@@ -23,6 +23,10 @@ api_bp.register_blueprint(dijekstra_bp)
 
 # Register the parent Blueprint to the app
 app.register_blueprint(api_bp)
+
+@app.route('/')
+def home():
+    return jsonify(message="Graph App API v 1.0.0")
 
 if __name__ == '__main__':
     env = os.getenv('FLASK_ENV', 'production')
