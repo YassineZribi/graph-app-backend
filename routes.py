@@ -100,10 +100,13 @@ def delete_graph():
     if not user:
         return jsonify({"message": "User not found"}), 404
 
-    success = Graph.delete_graph(user['_id'])
-    if success:
-        return jsonify({"message": "Graph deleted successfully"}), 200
-    return jsonify({"message": "Error deleting graph"}), 500
+    graph = Graph.get_graph(user['_id'])
+    if graph:
+        success = Graph.delete_graph(user['_id'])
+        if success:
+            return jsonify({"message": "Graph deleted successfully"}), 200
+        return jsonify({"message": "Error deleting graph"}), 500
+    return jsonify({"message": "No graph found for this user"}), 404
 
 
 dijekstra_bp = Blueprint('dijekstra', __name__)
