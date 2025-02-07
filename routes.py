@@ -13,10 +13,10 @@ auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 def register():
     data = request.get_json()
     if User.find_by_email(data['email']):
-        return jsonify({"message": "User already exists"}), 400
+        return jsonify({"message": "L'utilisateur existe déjà"}), 400
     
     User.create_user(data["first_name"], data["last_name"], data['email'], data['password'])
-    return jsonify({"message": "User created successfully"}), 201
+    return jsonify({"message": "Utilisateur créé avec succès"}), 201
 
 @auth_bp.route('/login', methods=['POST'])
 def login():
@@ -24,7 +24,7 @@ def login():
     user = User.find_by_email(data['email'])
     
     if not user or not User.verify_password(data['password'], user['password']):
-        return jsonify({"message": "Invalid credentials"}), 401
+        return jsonify({"message": "Informations d'identification invalides"}), 401
     
     # Convert the _id to a string before returning
     user['_id'] = serialize_objectid(user['_id'])
@@ -36,7 +36,7 @@ def login():
 @auth_bp.route('/protected', methods=['GET'])
 @jwt_required()
 def protected():
-    return jsonify({"message": "You have accessed a protected route"}), 200
+    return jsonify({"message": "Vous avez accédé à une route protégée"}), 200
 
 @auth_bp.route('/profile', methods=['GET'])
 @jwt_required()
@@ -45,7 +45,7 @@ def get_profile():
 
     user = User.find_by_email(current_user_email)
     if not user:
-        return jsonify({"message": "User not found"}), 404
+        return jsonify({"message": "Utilisateur non trouvé"}), 404
 
     # Convert the _id to a string before returning
     user['_id'] = serialize_objectid(user['_id'])
@@ -64,14 +64,14 @@ def save_graph():
 
     user = User.find_by_email(current_user_email)
     if not user:
-        return jsonify({"message": "User not found"}), 404
+        return jsonify({"message": "Utilisateur non trouvé"}), 404
 
     graph = Graph.create_or_update_graph(user['_id'], data)
     if graph:
         # Convert ObjectId to string for serialization
         graph['_id'] = serialize_objectid(graph['_id'])
-        return jsonify({"message": "Graph saved/updated successfully", "graph": graph}), 200
-    return jsonify({"message": "Error saving graph"}), 500
+        return jsonify({"message": "Graphe sauvegardé avec succès", "graph": graph}), 200
+    return jsonify({"message": "Erreur lors de l'enregistrement du graphe"}), 500
 
 # Get the user's graph
 @graph_bp.route('/graph', methods=['GET'])
@@ -81,14 +81,14 @@ def get_graph():
 
     user = User.find_by_email(current_user_email)
     if not user:
-        return jsonify({"message": "User not found"}), 404
+        return jsonify({"message": "Utilisateur non trouvé"}), 404
 
     graph = Graph.get_graph(user['_id'])
     if graph:
         # Convert ObjectId to string for serialization
         graph['_id'] = serialize_objectid(graph['_id'])
         return jsonify(graph), 200
-    return jsonify({"message": "No graph found for this user"}), 404
+    return jsonify({"message": "Aucun graphe trouvé pour cet utilisateur"}), 404
 
 # Delete the user's graph
 @graph_bp.route('/graph', methods=['DELETE'])
@@ -98,15 +98,15 @@ def delete_graph():
 
     user = User.find_by_email(current_user_email)
     if not user:
-        return jsonify({"message": "User not found"}), 404
+        return jsonify({"message": "Utilisateur non trouvé"}), 404
 
     graph = Graph.get_graph(user['_id'])
     if graph:
         success = Graph.delete_graph(user['_id'])
         if success:
-            return jsonify({"message": "Graph deleted successfully"}), 200
-        return jsonify({"message": "Error deleting graph"}), 500
-    return jsonify({"message": "No graph found for this user"}), 404
+            return jsonify({"message": "Graphe supprimé avec succès"}), 200
+        return jsonify({"message": "Erreur lors de la suppression du graphe"}), 500
+    return jsonify({"message": "Aucun graphe trouvé pour cet utilisateur"}), 404
 
 
 dijekstra_bp = Blueprint('dijekstra', __name__)
@@ -120,7 +120,7 @@ def calculate_dijekstra_shortest_path():
 
     user = User.find_by_email(current_user_email)
     if not user:
-        return jsonify({"message": "User not found"}), 404
+        return jsonify({"message": "Utilisateur non trouvé"}), 404
 
     selected_nodes_and_edges = get_shortest_path(data['graph'], data['startNode'], data['endNode'])
     # graph = Graph.get_graph(user['_id'])
